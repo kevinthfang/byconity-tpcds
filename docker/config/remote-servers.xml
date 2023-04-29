@@ -1,0 +1,27 @@
+<clickhouse>
+  <remote_servers replace="true">
+    <ch_benchmark>
+        <shard>
+            <internal_replication>true</internal_replication>
+            <replica>
+                <host>chnode1</host>
+                <port>9000</port>
+            </replica>
+        </shard>
+        <shard>
+            <internal_replication>true</internal_replication>
+            <replica>
+                <host>chnode2</host>
+                <port>9000</port>
+            </replica>
+        </shard>
+        <shard>
+            <internal_replication>true</internal_replication>
+            <replica>
+                <host>chnode2</host>
+                <port>9000</port>
+            </replica>
+        </shard>
+    </ch_benchmark>
+  </remote_servers>
+</clickhouse>
