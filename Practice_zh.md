@@ -37,7 +37,7 @@
    4）启动server，每个server运行在 1 台主机上：`./run.sh server`.    
    5）启动write workers，每个write worker运行在1台主机上：`./run.sh write_worke <worker_id>`. `worker_id` 是可选的，如果不设，会取`<hostname>-write`.   
    6）启动read workers，每个read worker运行在1台主机上：`./run.sh read_worke <worker_id>`. `worker_id` 是可选的，如果不设，会取`<hostname>-read`.   
-8. 后面如果要重启 ByConity 组件，可以用以下命令：`./run.sh stop {component_name}`, 以及 `./run.sh` `start` `{component_name}`, `component_name` 与#6中的描述相同
+8. 后面如果要重启 ByConity 组件，可以用以下命令：`./run.sh stop {component_name}`, 以及 `./run.sh` `start` `{component_name}`, `component_name` 与#7中的描述相同
 
 
 ### 1.3.2 **方式二：****软件包****部署**
@@ -55,7 +55,7 @@
     sudo dpkg -i byconity-common-static_0.1.1.1_amd64.deb
     ```
     3）在 `/etc/byconity-server/cnch_config.xml`中设置服务器地址，方法与#1.3.1 中描述的相同。 可以参考本项目中 `docker/config/cncn_config.xml` 对应的部分 。  
-    4）将 `/etc/byconity-server/fdb.config` 中的内容替换为为在#1.1中的 FDB 设置步骤中生成的`fdb.cluster` 文件内容。  
+    4）将 `/etc/byconity-server/fdb.cluster` 中的内容替换为为在#1.1中的 FDB 设置步骤中生成的`fdb.cluster` 文件内容。  
 
 3. 初始化并启动 ByConity 组件：  
     1）选择1台主机运行TSO，下载byconity-tso包并安装。
@@ -81,12 +81,12 @@
     sudo dpkg -i byconity-server_0.1.1.1_amd64.deb 
     systemctl start byconity-server
     ```
-    5）选择3台以上主机运行read worker，下载`byconity-worker` 包并安装。由于启用了resource manager作worker的发现，这里需要设置相关的环境变量，注意`WORKER_ID`必须是唯一的。
+    5）选择3台以上主机运行read worker，下载`byconity-worker` 包并安装。
     ```
     sudo dpkg -i byconity-worker_0.1.1.1_amd64.deb 
     systemctl start byconity-worker
     ```
-    6）选择3台以上主机运行write worker，下载 `byconity-write-worker` 包并安装。由于启用了resource manager作worker的发现，这里需要设置相关的环境变量，注意`WORKER_ID`必须是唯一的。
+    6）选择3台以上主机运行write worker，下载 `byconity-write-worker` 包并安装。
     ```
     sudo dpkg -i byconity-worker-write_0.1.1.1_amd64.deb 
     systemctl start byconity-worker-write
@@ -117,7 +117,11 @@
     ```
     bin/clickhouse client --host=<your_server_host> --port=<your_server_tcp_port>  --enable_optimizer=1 --dialect_type='ANSI'
     ```
-2. 运行一些基本的SQL
+2. 确保所有worker正常启动并且被识别
+    ```
+    select * from system.workers
+    ```
+3. 运行一些基本的SQL
     ```
     CREATE DATABASE test;
     USE test;
@@ -125,7 +129,7 @@
     INSERT INTO events SELECT number, toString(number) FROM numbers(10);
     SELECT * FROM events ORDER BY id;
     ```
-3. 确保运行结果是正常的
+4. 确保运行结果是正常的
 
 
 ## 4. 运行TPC-DS基准测试
@@ -158,13 +162,13 @@ chmod a+x *.sh
 ```
 
 #### 4.5 生成数据
-运行命令以生成 TPD-DS 数据文件。 在命令中，$1为数据大小。数据的生成会并行，依据config.sh中配置的PARALLEL。数据文件将生成到 `data_tpcds_{data_size}` 文件夹中。数据生成需要一些时间，期间工具没有信息输出，如果需要查看数据生成的进度，你可以观察`data_tpcds_{data_size}` 文件夹中的文件生成。
+运行命令以生成 TPD-DS 数据文件。 在命令中，$1为数据大小(GB)。数据的生成会并行，依据config.sh中配置的PARALLEL。数据文件将生成到 `data_tpcds_{data_size}` 文件夹中。数据生成需要一些时间，期间工具没有信息输出，如果需要查看数据生成的进度，你可以观察`data_tpcds_{data_size}` 文件夹中的文件生成。
 ```
 ./gen_data.sh 100
 ```
 
 #### 4.6 将数据写入到 ByConity
-运行命令以将 TPD-DS 数据从数据文件写入到 ByConity。 $1 是数据大小(GB)。
+运行命令以将 TPD-DS 数据从数据文件写入到 ByConity。 $1 是数据大小(GB)。数据的写入会依据PARALLEL并行。
 ```
 ./populate_data.sh 100
 ```
