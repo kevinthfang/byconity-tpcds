@@ -491,7 +491,7 @@ CREATE TABLE web_sales ON CLUSTER ch_benchmark
     ws_net_paid_inc_ship Float32,
     ws_net_paid_inc_ship_tax Float32,
     ws_net_profit Float32
-) ENGINE = MergeTree() ORDER BY (ws_sold_date_sk);
+) ENGINE = MergeTree() ORDER BY (ws_sold_date_sk) SETTINGS allow_nullable_key=1;
 
 CREATE TABLE catalog_sales ON CLUSTER ch_benchmark
 (
@@ -529,7 +529,7 @@ CREATE TABLE catalog_sales ON CLUSTER ch_benchmark
     cs_net_paid_inc_ship Float32,
     cs_net_paid_inc_ship_tax Float32,
     cs_net_profit Float32
-) ENGINE = MergeTree() ORDER BY (cs_sold_date_sk);
+) ENGINE = MergeTree() ORDER BY (cs_sold_date_sk) SETTINGS allow_nullable_key=1;
 
 CREATE TABLE store_sales ON CLUSTER ch_benchmark
 (
@@ -556,7 +556,7 @@ CREATE TABLE store_sales ON CLUSTER ch_benchmark
     ss_net_paid Nullable(Float32),
     ss_net_paid_inc_tax Nullable(Float32),
     ss_net_profit Nullable(Float32)
-) ENGINE = MergeTree() ORDER BY (ss_sold_date_sk);
+) ENGINE = MergeTree() ORDER BY (ss_sold_date_sk) SETTINGS allow_nullable_key=1;
 
 -- Create distributed table
 DROP DATABASE IF EXISTS tpcds ON CLUSTER ch_benchmark;
