@@ -28,18 +28,9 @@ TIME_FILE=$LOGDIR/time.txt
 
 echo "qid,duration,status" > "$RESULT"
 
-log "Make sure stats are created for tables, this will take some time..."
-clickhouse_client "create stats if not exists all" -d "$DATABASE"
-clickhouse_client "show stats all format PrettyCompact" -d "$DATABASE" >> $TRACE_LOG
-
 set -e
 
 log "Run warm up sql..."
-if [ -f ${SQL_DIR}/warmup.sql ]; then
-    QUERY=$(cat "${SQL_DIR}/warmup.sql")
-    log "$QUERY"
-	clickhouse_client "$QUERY" -d "$DATABASE" > /dev/null
-fi
 
 function parse_time() {
 	sec_to_ms $(cat ${TIME_FILE} | grep real | awk '{print $2}'; rm ${TIME_FILE} > /dev/null)
