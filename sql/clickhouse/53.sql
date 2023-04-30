@@ -38,7 +38,7 @@ select * from
 (select i_manufact_id,
 sum(ss_sales_price) sum_sales,
 avg(sum(ss_sales_price)) over (partition by i_manufact_id) avg_quarterly_sales
-from item, store_sales, date_dim, store
+from store_sales, item, date_dim, store
 where ss_item_sk = i_item_sk 
 and ss_sold_date_sk = d_date_sk
 and ss_store_sk = s_store_sk 
@@ -58,4 +58,4 @@ where case when avg_quarterly_sales > 0
 order by avg_quarterly_sales,
 	 sum_sales,
 	 i_manufact_id
-limit 100;
+limit 100 SETTINGS distributed_product_mode = 'global', partial_merge_join_optimizations = 1, max_bytes_before_external_group_by = 50000000000, max_bytes_before_external_sort = 50000000000;

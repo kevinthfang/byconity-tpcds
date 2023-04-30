@@ -55,4 +55,4 @@ group by cs_bill_customer_sk
       ,sum(case when ssci.customer_sk is not null and csci.customer_sk is not null then 1 else 0 end) store_and_catalog
 from ssci full outer join csci on (ssci.customer_sk=csci.customer_sk
                                and ssci.item_sk = csci.item_sk)
-limit 100
+limit 100 SETTINGS distributed_product_mode = 'global', partial_merge_join_optimizations = 1, max_bytes_before_external_group_by = 50000000000, max_bytes_before_external_sort = 50000000000;

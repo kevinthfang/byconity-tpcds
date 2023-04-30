@@ -83,4 +83,4 @@ from (select avg(ss_list_price) B1_LP
         and (ss_list_price between 154 and 154+10
           or ss_coupon_amt between 7326 and 7326+1000
           or ss_wholesale_cost between 7 and 7+20)) B6
-limit 100;
+limit 100 SETTINGS distributed_product_mode = 'global', partial_merge_join_optimizations = 1, max_bytes_before_external_group_by = 50000000000, max_bytes_before_external_sort = 50000000000;

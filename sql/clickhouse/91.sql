@@ -40,8 +40,8 @@ select
         cc_manager Manager,
         sum(cr_net_loss) Returns_Loss
 from
-        call_center,
         catalog_returns,
+        call_center,
         date_dim,
         customer,
         customer_address,
@@ -61,4 +61,4 @@ and     ( (cd_marital_status       = 'M' and cd_education_status     = 'Unknown'
 and     hd_buy_potential like 'Unknown%'
 and     ca_gmt_offset           = -7
 group by cc_call_center_id,cc_name,cc_manager,cd_marital_status,cd_education_status
-order by sum(cr_net_loss) desc;
+order by sum(cr_net_loss) desc SETTINGS distributed_product_mode = 'global', partial_merge_join_optimizations = 1, max_bytes_before_external_group_by = 50000000000, max_bytes_before_external_sort = 50000000000;

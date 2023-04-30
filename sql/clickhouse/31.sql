@@ -82,4 +82,4 @@ with ss as
        > case when ss1.store_sales > 0 then ss2.store_sales/ss1.store_sales else null end
     and case when ws2.web_sales > 0 then ws3.web_sales/ws2.web_sales else null end
        > case when ss2.store_sales > 0 then ss3.store_sales/ss2.store_sales else null end
- order by ss1.ca_county;
+ order by ss1.ca_county SETTINGS distributed_product_mode = 'global', partial_merge_join_optimizations = 1, max_bytes_before_external_group_by = 50000000000, max_bytes_before_external_sort = 50000000000;

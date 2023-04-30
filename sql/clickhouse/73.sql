@@ -58,4 +58,4 @@ select c_last_name
         group by ss_ticket_number,ss_customer_sk) dj,customer
         where ss_customer_sk = c_customer_sk
         and cnt between 1 and 5
-        order by cnt desc, c_last_name asc;
+        order by cnt desc, c_last_name asc SETTINGS distributed_product_mode = 'global', partial_merge_join_optimizations = 1, max_bytes_before_external_group_by = 50000000000, max_bytes_before_external_sort = 50000000000;

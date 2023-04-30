@@ -45,8 +45,8 @@ with year_total as (
        ,d_year dyear
        ,sum(ss_ext_list_price-ss_ext_discount_amt) year_total
        ,'s' sale_type
- from customer
-     ,store_sales
+ from store_sales
+     ,customer
      ,date_dim
  where c_customer_sk = ss_customer_sk
    and ss_sold_date_sk = d_date_sk
@@ -69,8 +69,8 @@ with year_total as (
        ,d_year dyear
        ,sum(ws_ext_list_price-ws_ext_discount_amt) year_total
        ,'w' sale_type
- from customer
-     ,web_sales
+ from web_sales
+     ,customer
      ,date_dim
  where c_customer_sk = ws_bill_customer_sk
    and ws_sold_date_sk = d_date_sk
@@ -111,4 +111,4 @@ with year_total as (
          ,t_s_secyear.customer_first_name
          ,t_s_secyear.customer_last_name
 	 ,t_s_secyear.customer_preferred_cust_flag
-limit 100;
+limit 100 SETTINGS distributed_product_mode = 'global', partial_merge_join_optimizations = 1, max_bytes_before_external_group_by = 50000000000, max_bytes_before_external_sort = 50000000000;

@@ -51,4 +51,4 @@ select i_item_id,
        d_year = 2000 
  group by i_item_id
  order by i_item_id
- limit 100;
+ limit 100 SETTINGS distributed_product_mode = 'global', partial_merge_join_optimizations = 1, max_bytes_before_external_group_by = 50000000000, max_bytes_before_external_sort = 50000000000;

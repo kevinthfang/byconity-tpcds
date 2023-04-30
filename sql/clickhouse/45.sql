@@ -50,4 +50,4 @@ select  ca_zip, ca_city, sum(ws_sales_price)
  	and d_qoy = 2 and d_year = 2001
  group by ca_zip, ca_city
  order by ca_zip, ca_city
- limit 100;
+ limit 100 SETTINGS distributed_product_mode = 'global', partial_merge_join_optimizations = 1, max_bytes_before_external_group_by = 50000000000, max_bytes_before_external_sort = 50000000000;

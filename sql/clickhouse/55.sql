@@ -36,7 +36,7 @@
 
 select i_brand_id brand_id, i_brand brand,
  	sum(ss_ext_sales_price) ext_price
- from date_dim, store_sales, item
+ from store_sales, date_dim, item
  where d_date_sk = ss_sold_date_sk
  	and ss_item_sk = i_item_sk
  	and i_manager_id=28
@@ -44,4 +44,4 @@ select i_brand_id brand_id, i_brand brand,
  	and d_year=1999
  group by i_brand, i_brand_id
  order by ext_price desc, i_brand_id
- limit 100 ;
+ limit 100 SETTINGS distributed_product_mode = 'global', partial_merge_join_optimizations = 1, max_bytes_before_external_group_by = 50000000000, max_bytes_before_external_sort = 50000000000;

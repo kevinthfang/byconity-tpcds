@@ -41,8 +41,8 @@ with year_total as (
         ,d_year as year
         ,sum(ss_net_paid) year_total
         ,'s' sale_type
-        from customer
-        ,store_sales
+        from store_sales
+        ,customer
         ,date_dim
         where c_customer_sk = ss_customer_sk
         and ss_sold_date_sk = d_date_sk
@@ -58,8 +58,8 @@ with year_total as (
         ,d_year as year
         ,sum(ws_net_paid) year_total
         ,'w' sale_type
-        from customer
-        ,web_sales
+        from web_sales
+        ,customer
         ,date_dim
         where c_customer_sk = ws_bill_customer_sk
         and ws_sold_date_sk = d_date_sk
@@ -91,4 +91,4 @@ with year_total as (
         and case when t_w_firstyear.year_total > 0 then t_w_secyear.year_total / t_w_firstyear.year_total else null end
         > case when t_s_firstyear.year_total > 0 then t_s_secyear.year_total / t_s_firstyear.year_total else null end
         order by 1,1,1
-        LIMIT 100;
+        LIMIT 100 SETTINGS distributed_product_mode = 'global', partial_merge_join_optimizations = 1, max_bytes_before_external_group_by = 50000000000, max_bytes_before_external_sort = 50000000000;

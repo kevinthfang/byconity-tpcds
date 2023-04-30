@@ -53,4 +53,4 @@ select count(*) from (
       and web_sales.ws_bill_customer_sk = customer.c_customer_sk
       and d_month_seq between 1200 and 1200 + 11
 ) hot_cust
-limit 100;
+limit 100 SETTINGS distributed_product_mode = 'global', partial_merge_join_optimizations = 1, max_bytes_before_external_group_by = 50000000000, max_bytes_before_external_sort = 50000000000;

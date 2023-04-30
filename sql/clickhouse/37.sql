@@ -37,7 +37,7 @@
 select i_item_id
        ,i_item_desc
        ,i_current_price
- from item, inventory, date_dim, catalog_sales
+ from catalog_sales, item, inventory, date_dim
  where i_current_price between 68 and 68 + 30
  and inv_item_sk = i_item_sk
  and d_date_sk=inv_date_sk
@@ -47,4 +47,4 @@ select i_item_id
  and cs_item_sk = i_item_sk
  group by i_item_id,i_item_desc,i_current_price
  order by i_item_id
- limit 100;
+ limit 100 SETTINGS distributed_product_mode = 'global', partial_merge_join_optimizations = 1, max_bytes_before_external_group_by = 50000000000, max_bytes_before_external_sort = 50000000000;

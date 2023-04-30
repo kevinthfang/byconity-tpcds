@@ -70,4 +70,4 @@ select i_brand_id brand_id, i_brand brand,t_hour,t_minute,
         and (t_meal_time = 'breakfast' or t_meal_time = 'dinner')
         group by i_brand, i_brand_id,t_hour,t_minute
         order by ext_price desc, i_brand_id
-        ;
+        SETTINGS distributed_product_mode = 'global', partial_merge_join_optimizations = 1, max_bytes_before_external_group_by = 50000000000, max_bytes_before_external_sort = 50000000000;

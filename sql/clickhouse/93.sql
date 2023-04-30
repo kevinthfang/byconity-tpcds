@@ -48,4 +48,4 @@ select  ss_customer_sk
               and r_reason_desc = 'reason 28') t
       group by ss_customer_sk
       order by sumsales, ss_customer_sk
-limit 100;
+limit 100 SETTINGS distributed_product_mode = 'global', partial_merge_join_optimizations = 1, max_bytes_before_external_group_by = 50000000000, max_bytes_before_external_sort = 50000000000;

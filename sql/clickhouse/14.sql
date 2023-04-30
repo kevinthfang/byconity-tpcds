@@ -134,7 +134,7 @@ with  cross_items as
  ) z
  group by rollup (channel, i_brand_id,i_class_id,i_category_id)
  order by channel,i_brand_id,i_class_id,i_category_id
-limit 100;
+limit 100 SETTINGS distributed_product_mode = 'global', partial_merge_join_optimizations = 1, max_bytes_before_external_group_by = 50000000000, max_bytes_before_external_sort = 50000000000;
  
  with  cross_items as
  (select i_item_sk ss_item_sk
@@ -241,5 +241,4 @@ limit 100;
    and this_year.i_class_id = last_year.i_class_id
    and this_year.i_category_id = last_year.i_category_id
  order by this_year.channel, this_year.i_brand_id, this_year.i_class_id, this_year.i_category_id
-limit 100;
-
+limit 100 SETTINGS distributed_product_mode = 'global', partial_merge_join_optimizations = 1, max_bytes_before_external_group_by = 50000000000, max_bytes_before_external_sort = 50000000000;

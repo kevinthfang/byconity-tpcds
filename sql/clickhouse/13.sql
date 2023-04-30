@@ -82,4 +82,4 @@ select avg(ss_quantity)
   and ca_state in ('VA', 'TX', 'MS')
   and ss_net_profit between 50 and 250  
      ))
-;
+SETTINGS distributed_product_mode = 'global', partial_merge_join_optimizations = 1, max_bytes_before_external_group_by = 50000000000, max_bytes_before_external_sort = 50000000000;

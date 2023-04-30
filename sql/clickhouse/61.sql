@@ -74,4 +74,4 @@ select promotions,total,cast(promotions as decimal(15,4))/cast(total as decimal(
         and   d_year = 1998
         and   d_moy  = 11) all_sales
         order by promotions, total
-        limit 100;
+        limit 100 SETTINGS distributed_product_mode = 'global', partial_merge_join_optimizations = 1, max_bytes_before_external_group_by = 50000000000, max_bytes_before_external_sort = 50000000000;

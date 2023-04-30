@@ -65,4 +65,4 @@ where asceding.rnk = descending.rnk
   and i1.i_item_sk=asceding.item_sk
   and i2.i_item_sk=descending.item_sk
 order by asceding.rnk
-limit 100;
+limit 100 SETTINGS distributed_product_mode = 'global', partial_merge_join_optimizations = 1, max_bytes_before_external_group_by = 50000000000, max_bytes_before_external_sort = 50000000000;

@@ -61,4 +61,4 @@ with customer_total_return as
  order by c_customer_id,c_salutation,c_first_name,c_last_name,c_preferred_cust_flag
                   ,c_birth_day,c_birth_month,c_birth_year,c_birth_country,c_login,c_email_address
                   ,c_last_review_date,ctr_total_return
-limit 100;
+limit 100 SETTINGS distributed_product_mode = 'global', partial_merge_join_optimizations = 1, max_bytes_before_external_group_by = 50000000000, max_bytes_before_external_sort = 50000000000;

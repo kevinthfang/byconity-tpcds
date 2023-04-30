@@ -83,4 +83,4 @@ select  s_store_name
   and (substr(s_zip,1,2) = substr(V1.ca_zip,1,2))
  group by s_store_name
  order by s_store_name
- limit 100;
+ limit 100 SETTINGS distributed_product_mode = 'global', partial_merge_join_optimizations = 1, max_bytes_before_external_group_by = 50000000000, max_bytes_before_external_sort = 50000000000;

@@ -38,8 +38,8 @@ select  dt.d_year
         ,item.i_category_id
         ,item.i_category
         ,sum(ss_ext_sales_price)
- from   date_dim dt
-        ,store_sales
+ from   store_sales
+        ,date_dim dt
         ,item
  where dt.d_date_sk = store_sales.ss_sold_date_sk
         and store_sales.ss_item_sk = item.i_item_sk
@@ -52,4 +52,4 @@ select  dt.d_year
  order by       sum(ss_ext_sales_price) desc,dt.d_year
                 ,item.i_category_id
                 ,item.i_category
-limit 100 ;
+limit 100 SETTINGS distributed_product_mode = 'global', partial_merge_join_optimizations = 1, max_bytes_before_external_group_by = 50000000000, max_bytes_before_external_sort = 50000000000;

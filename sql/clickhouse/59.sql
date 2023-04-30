@@ -74,4 +74,4 @@ with wss as
  where s_store_id1=s_store_id2
    and d_week_seq1=d_week_seq2-52
  order by s_store_name1,s_store_id1,d_week_seq1
- limit 100;
+ limit 100 SETTINGS distributed_product_mode = 'global', partial_merge_join_optimizations = 1, max_bytes_before_external_group_by = 50000000000, max_bytes_before_external_sort = 50000000000;

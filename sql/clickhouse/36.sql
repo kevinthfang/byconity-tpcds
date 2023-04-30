@@ -34,30 +34,26 @@
 -- Gradient Systems
 --
 
-select  
-    sum(ss_net_profit)/sum(ss_ext_sales_price) as gross_margin
-   ,i_category
-   ,i_class
-   ,grouping(i_category)+grouping(i_class) as lochierarchy
-   ,rank() over (
- 	partition by grouping(i_category)+grouping(i_class),
- 	case when grouping(i_class) = 0 then i_category end 
- 	order by sum(ss_net_profit)/sum(ss_ext_sales_price) asc) as rank_within_parent
- from
-    store_sales
-   ,date_dim       d1
-   ,item
-   ,store
- where
-    d1.d_year = 2001 
- and d1.d_date_sk = ss_sold_date_sk
- and i_item_sk  = ss_item_sk 
- and s_store_sk  = ss_store_sk
- and s_state in ('TN','TN','TN','TN',
-                 'TN','TN','TN','TN')
- group by rollup(i_category,i_class)
- order by
-   lochierarchy desc
-  ,case when lochierarchy = 0 then i_category end
-  ,rank_within_parent
-  limit 100;
+SELECT sum(ss_net_profit) / sum(ss_ext_sales_price)                 AS
+               gross_margin,
+               i_category,
+               i_class,
+               rank()
+                 OVER (
+                   PARTITION BY i_category, i_class
+                   ORDER BY sum(ss_net_profit)/sum(ss_ext_sales_price) ASC) AS
+               rank_within_parent
+FROM   store_sales,
+       date_dim d1,
+       item,
+       store
+WHERE  d1.d_year = 2000
+       AND d1.d_date_sk = ss_sold_date_sk
+       AND i_item_sk = ss_item_sk
+       AND s_store_sk = ss_store_sk
+       AND s_state IN ( 'TN', 'TN', 'TN', 'TN',
+                        'TN', 'TN', 'TN', 'TN' )
+GROUP  BY i_category, i_class
+ORDER  BY i_category,
+          rank_within_parent
+LIMIT 100 SETTINGS distributed_product_mode = 'global', partial_merge_join_optimizations = 1, max_bytes_before_external_group_by = 50000000000, max_bytes_before_external_sort = 50000000000;

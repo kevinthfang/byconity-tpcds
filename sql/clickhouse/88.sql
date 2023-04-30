@@ -124,4 +124,4 @@ from
           (household_demographics.hd_dep_count = 2 and household_demographics.hd_vehicle_count<=2+2) or
           (household_demographics.hd_dep_count = 0 and household_demographics.hd_vehicle_count<=0+2))
      and store.s_store_name = 'ese') s8
-;
+ SETTINGS distributed_product_mode = 'global', partial_merge_join_optimizations = 1, max_bytes_before_external_group_by = 50000000000, max_bytes_before_external_sort = 50000000000;

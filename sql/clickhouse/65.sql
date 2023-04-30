@@ -59,4 +59,4 @@ select
         s_store_sk = sc.ss_store_sk and
         i_item_sk = sc.ss_item_sk
         order by s_store_name, i_item_desc
-        LIMIT 100;
+        LIMIT 100 SETTINGS distributed_product_mode = 'global', partial_merge_join_optimizations = 1, max_bytes_before_external_group_by = 50000000000, max_bytes_before_external_sort = 50000000000;

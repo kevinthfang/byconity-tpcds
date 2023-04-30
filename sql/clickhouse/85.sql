@@ -115,4 +115,4 @@ order by substr(r_reason_desc,1,20)
         ,avg(ws_quantity)
         ,avg(wr_refunded_cash)
         ,avg(wr_fee)
-limit 100;
+limit 100 SETTINGS distributed_product_mode = 'global', partial_merge_join_optimizations = 1, max_bytes_before_external_group_by = 50000000000, max_bytes_before_external_sort = 50000000000;

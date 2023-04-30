@@ -38,8 +38,8 @@ select  *
         from (select i_manager_id
         ,sum(ss_sales_price) sum_sales
         ,avg(sum(ss_sales_price)) over (partition by i_manager_id) avg_monthly_sales
-        from item
-        ,store_sales
+        from store_sales
+        ,item
         ,date_dim
         ,store
         where ss_item_sk = i_item_sk
@@ -59,4 +59,4 @@ select  *
         order by i_manager_id
         ,avg_monthly_sales
         ,sum_sales
-        LIMIT 100;
+        LIMIT 100 SETTINGS distributed_product_mode = 'global', partial_merge_join_optimizations = 1, max_bytes_before_external_group_by = 50000000000, max_bytes_before_external_sort = 50000000000;

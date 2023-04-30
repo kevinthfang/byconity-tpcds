@@ -34,29 +34,50 @@
 -- Gradient Systems
 --
 
-select i_item_desc
-        ,w_warehouse_name
-        ,d1.d_week_seq
-        ,sum(case when p_promo_sk is null then 1 else 0 end) no_promo
-        ,sum(case when p_promo_sk is not null then 1 else 0 end) promo
-        ,count(*) total_cnt
-        from catalog_sales
-        join inventory on (cs_item_sk = inv_item_sk)
-        join warehouse on (w_warehouse_sk=inv_warehouse_sk)
-        join item on (i_item_sk = cs_item_sk)
-        join customer_demographics on (cs_bill_cdemo_sk = cd_demo_sk)
-        join household_demographics on (cs_bill_hdemo_sk = hd_demo_sk)
-        join date_dim d1 on (cs_sold_date_sk = d1.d_date_sk)
-        join date_dim d2 on (inv_date_sk = d2.d_date_sk)
-        join date_dim d3 on (cs_ship_date_sk = d3.d_date_sk)
-        left outer join promotion on (cs_promo_sk=p_promo_sk)
-        left outer join catalog_returns on (cr_item_sk = cs_item_sk and cr_order_number = cs_order_number)
-        where d1.d_week_seq = d2.d_week_seq
-        and inv_quantity_on_hand < cs_quantity
-  and d3.d_date > d1.d_date + INTERVAL '5' DAY
-          and hd_buy_potential = '>10000'
-          and d1.d_year = 1999
-          and cd_marital_status = 'D'
-          group by i_item_desc,w_warehouse_name,d1.d_week_seq
-          order by total_cnt desc, i_item_desc, w_warehouse_name, d_week_seq
-          LIMIT 100;
+WITH top_items AS (
+  SELECT cs_item_sk,
+                cs_warehouse_sk,
+                d_week_seq,
+                sum(CASE
+                      WHEN p_promo_sk IS NULL THEN 1
+                      ELSE 0
+                    END) no_promo,
+                sum(CASE
+                      WHEN p_promo_sk IS NOT NULL THEN 1
+                      ELSE 0
+                    END) promo,
+                count(*) total_cnt
+  FROM   catalog_sales
+        JOIN inventory
+          ON ( cs_item_sk = inv_item_sk and cs_sold_date_sk = inv_date_sk and cs_warehouse_sk = inv_warehouse_sk )
+        JOIN customer_demographics
+          ON ( cs_bill_cdemo_sk = cd_demo_sk )
+        JOIN household_demographics
+          ON ( cs_bill_hdemo_sk = hd_demo_sk )
+        JOIN date_dim d1
+          ON ( cs_sold_date_sk = d1.d_date_sk )
+        LEFT OUTER JOIN promotion
+                      ON ( cs_promo_sk = p_promo_sk )
+        LEFT OUTER JOIN catalog_returns
+                      ON ( cr_item_sk = cs_item_sk
+                          AND cr_order_number = cs_order_number )
+  WHERE inv_quantity_on_hand < cs_quantity
+        AND hd_buy_potential = '501-1000'
+        AND d1.d_year = 2002
+        AND cd_marital_status = 'M'
+  GROUP  BY cs_item_sk, cs_warehouse_sk, d1.d_week_seq
+)
+SELECT i_item_desc,
+       w_warehouse_name,
+       top_items.d_week_seq,
+       no_promo,
+       promo,
+       total_cnt
+FROM top_items
+JOIN warehouse
+  ON ( w_warehouse_sk = cs_warehouse_sk )
+JOIN item
+  ON ( i_item_sk = cs_item_sk )
+ORDER  BY total_cnt DESC,
+          1, 2, 3
+LIMIT 100 SETTINGS distributed_product_mode = 'global', partial_merge_join_optimizations = 1, max_bytes_before_external_group_by = 50000000000, max_bytes_before_external_sort = 50000000000;

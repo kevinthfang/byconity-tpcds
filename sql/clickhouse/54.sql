@@ -62,8 +62,8 @@ with my_customers as (
  , my_revenue as (
  select c_customer_sk,
         sum(ss_ext_sales_price) as revenue
- from   my_customers,
-        store_sales,
+ from   store_sales,
+        my_customers,
         customer_address,
         store,
         date_dim
@@ -86,4 +86,4 @@ with my_customers as (
  from segments
  group by segment
  order by segment, num_customers
- limit 100;
+ limit 100 SETTINGS distributed_product_mode = 'global', partial_merge_join_optimizations = 1, max_bytes_before_external_group_by = 50000000000, max_bytes_before_external_sort = 50000000000;

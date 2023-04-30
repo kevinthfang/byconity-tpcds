@@ -34,26 +34,20 @@
 -- Gradient Systems
 --
 
-select  
-    sum(ws_net_paid) as total_sum
-   ,i_category
-   ,i_class
-   ,grouping(i_category)+grouping(i_class) as lochierarchy
-   ,rank() over (
- 	partition by grouping(i_category)+grouping(i_class),
- 	case when grouping(i_class) = 0 then i_category end 
- 	order by sum(ws_net_paid) desc) as rank_within_parent
- from
-    web_sales
-   ,date_dim       d1
-   ,item
- where
-    d1.d_month_seq between 1200 and 1200+11
- and d1.d_date_sk = ws_sold_date_sk
- and i_item_sk  = ws_item_sk
- group by rollup(i_category,i_class)
- order by
-   lochierarchy desc,
-   case when lochierarchy = 0 then i_category end,
-   rank_within_parent
- limit 100;
+SELECT sum(ws_net_paid)                         AS total_sum,
+               i_category,
+               i_class,
+               rank()
+                 OVER (
+                   PARTITION BY i_category, i_class
+                   ORDER BY sum(ws_net_paid) DESC)      AS rank_within_parent
+FROM   web_sales,
+       date_dim d1,
+       item
+WHERE  d1.d_month_seq BETWEEN 1183 AND 1183 + 11
+       AND d1.d_date_sk = ws_sold_date_sk
+       AND i_item_sk = ws_item_sk
+GROUP  BY i_category, i_class
+ORDER  BY i_category,
+          rank_within_parent
+LIMIT 100 SETTINGS distributed_product_mode = 'global', partial_merge_join_optimizations = 1, max_bytes_before_external_group_by = 50000000000, max_bytes_before_external_sort = 50000000000;

@@ -36,7 +36,7 @@
 
 select  i_brand_id brand_id, i_brand brand, i_manufact_id, i_manufact,
  	sum(ss_ext_sales_price) ext_price
- from date_dim, store_sales, item,customer,customer_address,store
+ from store_sales, date_dim, item,customer,customer_address,store
  where d_date_sk = ss_sold_date_sk
    and ss_item_sk = i_item_sk
    and i_manager_id=8
@@ -55,4 +55,4 @@ select  i_brand_id brand_id, i_brand brand, i_manufact_id, i_manufact,
          ,i_brand_id
          ,i_manufact_id
          ,i_manufact
-limit 100;
+limit 100 SETTINGS distributed_product_mode = 'global', partial_merge_join_optimizations = 1, max_bytes_before_external_group_by = 50000000000, max_bytes_before_external_sort = 50000000000;

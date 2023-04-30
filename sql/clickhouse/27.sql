@@ -53,4 +53,4 @@ select i_item_id,
  group by rollup (i_item_id, s_state)
  order by i_item_id
          ,s_state
- limit 100;
+ limit 100 SETTINGS distributed_product_mode = 'global', partial_merge_join_optimizations = 1, max_bytes_before_external_group_by = 50000000000, max_bytes_before_external_sort = 50000000000;
