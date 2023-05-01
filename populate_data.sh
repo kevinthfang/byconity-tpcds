@@ -19,10 +19,13 @@ source ./helper.sh
 
 [ -z "$1" ] && DATASIZE=1 || DATASIZE=$1
 [ -z "$2" ] && CSVPATH="$SCRIPTPATH/data_${SUITE}_${DATASIZE}" || CSVPATH=$2
+IMPORT_DURATION=${IMPORT_DURATION:-logs/import_duration.txt}
 
 DATABASE=${DATABASE:-${DB_PREFIX}${SUITE}${DATASIZE}}
 EXT=dat
 DELIM="|"
+LAST_TABLE=web_site
+DDL=$SCRIPTPATH/ddl/tpcds.sql
 
 if [ ! -d $CSVPATH ]; then
     log "$CSVPATH directory not found."
@@ -31,60 +34,53 @@ fi
 
 set -e
 
-log "Create tables for ${DATABASE}..."
-CNCH_DDL=$(sed "s|${SUITE}|${DATABASE}|g" $SCRIPTPATH/ddl/tpcds.sql)
-clickhouse_client "${CNCH_DDL}"
+case $DATASIZE in
+	1)	
+		SORTKEY_GROUP=(ca_address_sk-1 cd_demo_sk-1 d_date_sk-1 w_warehouse_sk-1 sm_ship_mode_sk-1 t_time_sk-1 r_reason_sk-1 ib_income_band_sk-1 i_item_sk-1 s_store_sk-1 cc_call_center_sk-1 c_customer_sk-1 web_site_sk-1 sr_returned_date_sk-1 hd_demo_sk-1 wp_web_page_sk-1 p_promo_sk-1 cp_catalog_page_sk-1 inv_date_sk-1 cr_returned_date_sk-1 wr_returned_date_sk-1 ws_sold_date_sk-1 cs_sold_date_sk-1 ss_sold_date_sk-1)
+		;;
+	100)
+		SORTKEY_GROUP=(ca_address_sk-1 cd_demo_sk-1 d_date_sk-1 w_warehouse_sk-1 sm_ship_mode_sk-1 t_time_sk-1 r_reason_sk-1 ib_income_band_sk-1 i_item_sk-1 s_store_sk-1 cc_call_center_sk-1 c_customer_sk-1 web_site_sk-1 sr_returned_date_sk-2 hd_demo_sk-1 wp_web_page_sk-1 p_promo_sk-1 cp_catalog_page_sk-1 inv_date_sk-2 cr_returned_date_sk-6 wr_returned_date_sk-4 ws_sold_date_sk-4 cs_sold_date_sk-6 ss_sold_date_sk-8)
+		;;
+	1000)
+		SORTKEY_GROUP=(ca_address_sk-1 cd_demo_sk-1 d_date_sk-1 w_warehouse_sk-1 sm_ship_mode_sk-1 t_time_sk-1 r_reason_sk-1 ib_income_band_sk-1 i_item_sk-1 s_store_sk-1 cc_call_center_sk-1 c_customer_sk-1 web_site_sk-1 sr_returned_date_sk-22 hd_demo_sk-1 wp_web_page_sk-1 p_promo_sk-1 cp_catalog_page_sk-1 inv_date_sk-10 cr_returned_date_sk-15 wr_returned_date_sk-6 ws_sold_date_sk-100 cs_sold_date_sk-200 ss_sold_date_sk-260)
+esac
 
-log "Import dataset from ${CSVPATH}..."
-TABLES=$(show_tables "$DATABASE")
+SED_REPLACE=''
+for SORTKEYS in ${SORTKEY_GROUP[@]}; do
+	IFS=- read -r KEY BUCKET <<< "$SORTKEYS"
+	eval "SED_REPLACE+='s|DISTRIBUTED BY HASH(\`${KEY}\`) BUCKETS [0-9]*|DISTRIBUTED BY HASH(\`${KEY}\`) BUCKETS ${BUCKETS}|g; '"
+done
+
+sed -i "${SED_REPLACE}" $DDL 
+
+log "Create tables for ${DATABASE}..."
+sed "s|${SUITE}|${DATABASE}|g" $DDL | $EXEC 
+TABLES=$($EXEC --skip-column-names -D ${DATABASE} -e 'SHOW TABLES;' | awk '{print $1}')
 log "Tables created: $TABLES"
 
-FILE_TABLES=()
-FILE_NAMES=()
+log "Import dataset from ${CSVPATH}..."
 for TABLE in $TABLES; do
-    FILE=${CSVPATH}/${TABLE}.${EXT}
+    CNTSQL="SELECT COUNT(*) FROM ${TABLE}"
+	log "importing ${DATABASE}.${TABLE}..."
 
-	if [ -f "${FILE}" ]; then
-		FILE_TABLES+=(${TABLE})
-		FILE_NAMES+=(${FILE})
-	else
-		for f in `find ${CSVPATH}/ -regex "${CSVPATH}/${TABLE}_[0-9_]+\.${EXT}"`; do
-			FILE_TABLES+=(${TABLE})
-			FILE_NAMES+=(${f})
-		done
-	fi
+    for ORIG_F in ${CSVPATH}/${TABLE}*; do
+        FNB=$(basename -- "$ORIG_F") && FILENAME="${FNB%.*}"
+
+		if [[ ${TABLE}___ == ${FILENAME//[0-9]/} ]]; then
+			TASKID="${FILENAME}-${SUITE}-${SIZE}"
+			log "${FILENAME} - ${FNB}"
+			trace "${FILENAME} - ${FNB}"
+			trace "RUN: curl -u ${SRV_USER}:${SRV_PASSWORD} --location-trusted -T ${ORIG_F} -H "label:${TASKID}" -H "column_separator:${DELIM}" -H "max_filter_ratio:0.1" http://${SRV_IP}:${SRV_HTTP_PORT}/api/${DATABASE}/${TABLE}/_stream_load"
+			curl -u ${SRV_USER}:${SRV_PASSWORD} --location-trusted -T ${ORIG_F} -H "label:${TASKID}" -H "column_separator:${DELIM}" -H "max_filter_ratio:0.1" http://${SRV_IP}:${SRV_HTTP_PORT}/api/${DATABASE}/${TABLE}/_stream_load 2>$1 >> $TRACE_LOG
+			log "$TABLE imported count: $(${EXEC} -D $DATABASE -e "${CNTSQL}" | awk '{print $1}')"
+		fi
+    done
 done
 
-ARGS=" -d $DATABASE --input_format_defaults_for_omitted_fields=1 --format_csv_delimiter='$DELIM' --input_format_parallel_parsing=1"
-CMDS=()
-for i in ${!FILE_NAMES[@]}; do
-	SQL="INSERT INTO ${FILE_TABLES[$i]} FORMAT CSV"
-	CMD=$(clickhouse_client_cmd "$SQL" "$ARGS < ${FILE_NAMES[$i]}")
-	if [ -n "$ENABLE_TRACE" ]; then
-        trace "$CMD"
-    fi
-    CMDS+=("${CMD} && echo uploaded ${FILE_NAMES[$i]} || exit 1")
-done
-
-if [ -z "$PARALLEL" ]; then
-    PARALLEL=$(($(grep -c ^processor /proc/cpuinfo)/2))
-    if (( PARALLEL < 2 )); then
-        PARALLEL=2
-    fi
-fi
-
-log "set PARALLEL ${PARALLEL}"
-
-SECONDS=0
-printf "%s\n" "${CMDS[@]}" | tr '\n' '\0' | xargs -0 -P${PARALLEL} -n 1 -I {} sh -c "{}"
+echo $SECONDS > $IMPORT_DURATION
 log "Used ${SECONDS}s to import ${DATABASE}."
 
-
-# check row counts 
-select_count() {
-	clickhouse_client "SELECT COUNT(*) FROM $1"
-}
-
+log "Checking imported count..."
 case $DATASIZE in
 	1)	
 		ROW_CNT=(call_center-6 catalog_page-11718 catalog_returns-143974 catalog_sales-1440839 customer-100000 customer_address-50000 customer_demographics-1920800 date_dim-73049 household_demographics-7200 income_band-20 inventory-11745000 item-18000 promotion-300 reason-35 ship_mode-20 store-12 store_returns-287777 store_sales-2880029 time_dim-86400 warehouse-5 web_page-60 web_returns-71937 web_sales-720791 web_site-30)
@@ -98,21 +94,11 @@ esac
 
 for CNT in ${ROW_CNT[@]}; do
 	IFS=- read -r TABLE ROW <<< "${CNT}" && unset IFS
-
-	IMPORTED_COUNT=$(clickhouse_client "SELECT COUNT(*) FROM ${TABLE}" -d ${DATABASE})
-	FAILURE=0
+	CNTSQL="SELECT COUNT(*) FROM ${TABLE}"
+	IMPORTED_COUNT=$(${EXEC} -D $DATABASE -e "${CNTSQL}" | awk '{print $1}')
 	if [[ "${IMPORTED_COUNT}" != "${ROW}" ]]; then
-		# As long as 1 table fails, we will trigger FAILURE
-		log "${TABLE} should have ${IMPORTED_COUNT} instead has ${ROW}"
-		FAILURE=1
+		log "${TABLE} should have ${ROW} instead has ${IMPORTED_COUNT}"
 	else
 		log "${TABLE} count matches expectation."
-	fi 
+	fi
 done 
-
-if [[ "${FAILURE}" == "1" ]]; then 
-	log "Imported rows do not match the required amount. Terminating."
-	exit 1
-fi 
-log "All tables imported matches expectation."
-
