@@ -48,7 +48,7 @@ esac
 SED_REPLACE=''
 for SORTKEYS in ${SORTKEY_GROUP[@]}; do
 	IFS=- read -r KEY BUCKET <<< "$SORTKEYS"
-	eval "SED_REPLACE+='s|DISTRIBUTED BY HASH(\`${KEY}\`) BUCKETS [0-9]*|DISTRIBUTED BY HASH(\`${KEY}\`) BUCKETS ${BUCKETS}|g; '"
+	eval "SED_REPLACE+='s|DISTRIBUTED BY HASH(\`${KEY}\`) BUCKETS [0-9]*|DISTRIBUTED BY HASH(\`${KEY}\`) BUCKETS ${BUCKET}|g; '"
 done
 
 sed -i "${SED_REPLACE}" $DDL 
@@ -67,11 +67,11 @@ for TABLE in $TABLES; do
         FNB=$(basename -- "$ORIG_F") && FILENAME="${FNB%.*}"
 
 		if [[ ${TABLE}___ == ${FILENAME//[0-9]/} ]]; then
-			TASKID="${FILENAME}-${SUITE}-${SIZE}"
+			TASKID=${FILENAME}-${DATASIZE}
 			log "${FILENAME} - ${FNB}"
 			trace "${FILENAME} - ${FNB}"
-			trace "RUN: curl -u ${SRV_USER}:${SRV_PASSWORD} --location-trusted -T ${ORIG_F} -H "label:${TASKID}" -H "column_separator:${DELIM}" -H "max_filter_ratio:0.1" http://${SRV_IP}:${SRV_HTTP_PORT}/api/${DATABASE}/${TABLE}/_stream_load"
-			curl -u ${SRV_USER}:${SRV_PASSWORD} --location-trusted -T ${ORIG_F} -H "label:${TASKID}" -H "column_separator:${DELIM}" -H "max_filter_ratio:0.1" http://${SRV_IP}:${SRV_HTTP_PORT}/api/${DATABASE}/${TABLE}/_stream_load 2>$1 >> $TRACE_LOG
+			trace "RUN: curl -u ${SRV_USER}:${SRV_PASSWORD} --location-trusted -T ${ORIG_F} -H "label:${TASKID}" -H "column_separator:${DELIM}" -H "max_filter_ratio:0.1" -H "exec_mem_limit:8589934592" http://${SRV_IP}:${SRV_HTTP_PORT}/api/${DATABASE}/${TABLE}/_stream_load"
+			curl -u ${SRV_USER}:${SRV_PASSWORD} --location-trusted -T ${ORIG_F} -H "label:${TASKID}" -H "column_separator:${DELIM}" -H "max_filter_ratio:0.1" -H "exec_mem_limit:8589934592" http://${SRV_IP}:${SRV_HTTP_PORT}/api/${DATABASE}/${TABLE}/_stream_load 2>/dev/null >> $TRACE_LOG
 			log "$TABLE imported count: $(${EXEC} -D $DATABASE -e "${CNTSQL}" | awk '{print $1}')"
 		fi
     done

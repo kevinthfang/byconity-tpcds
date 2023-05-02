@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS customer_address
 ) ENGINE=OLAP 
 DUPLICATE KEY(`ca_address_sk`)
 COMMENT "OLAP"
-DISTRIBUTED BY HASH(`ca_address_sk`) BUCKETS 2
+DISTRIBUTED BY HASH(`ca_address_sk`) BUCKETS 1
 PROPERTIES (
   "replication_num" = "1",
   "colocate_with" = "tpcdsa",
@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS customer_demographics
 ) ENGINE=OLAP
 DUPLICATE KEY(`cd_demo_sk`)
 COMMENT "OLAP"
-DISTRIBUTED BY HASH(`cd_demo_sk`) BUCKETS 2
+DISTRIBUTED BY HASH(`cd_demo_sk`) BUCKETS 1
 PROPERTIES (
   "replication_num" = "1",
   "colocate_with" = "tpcdsb",
@@ -83,7 +83,7 @@ CREATE TABLE IF NOT EXISTS date_dim
 ) ENGINE=OLAP
 DUPLICATE KEY(`d_date_sk`)
 COMMENT "OLAP"
-DISTRIBUTED BY HASH(`d_date_sk`) BUCKETS 2
+DISTRIBUTED BY HASH(`d_date_sk`) BUCKETS 1
 PROPERTIES (
   "replication_num" = "1",
   "colocate_with" = "tpcdsc",
@@ -110,7 +110,7 @@ CREATE TABLE IF NOT EXISTS warehouse
 ) ENGINE=OLAP
 DUPLICATE KEY(`w_warehouse_sk`)
 COMMENT "OLAP"
-DISTRIBUTED BY HASH(`w_warehouse_sk`) BUCKETS 2
+DISTRIBUTED BY HASH(`w_warehouse_sk`) BUCKETS 1
 PROPERTIES (
   "replication_num" = "1",
   "colocate_with" = "tpcdsd",
@@ -129,7 +129,7 @@ CREATE TABLE IF NOT EXISTS ship_mode
 ) ENGINE=OLAP
 DUPLICATE KEY(`sm_ship_mode_sk`)
 COMMENT "OLAP"
-DISTRIBUTED BY HASH(`sm_ship_mode_sk`) BUCKETS 2
+DISTRIBUTED BY HASH(`sm_ship_mode_sk`) BUCKETS 1
 PROPERTIES (
   "replication_num" = "1",
   "colocate_with" = "tpcdse",
@@ -152,7 +152,7 @@ CREATE TABLE IF NOT EXISTS time_dim
 ) ENGINE=OLAP
 DUPLICATE KEY(`t_time_sk`)
 COMMENT "OLAP"
-DISTRIBUTED BY HASH(`t_time_sk`) BUCKETS 2
+DISTRIBUTED BY HASH(`t_time_sk`) BUCKETS 1
 PROPERTIES (
   "replication_num" = "1",
   "colocate_with" = "tpcdsf",
@@ -168,7 +168,7 @@ CREATE TABLE IF NOT EXISTS reason
 ) ENGINE=OLAP
 DUPLICATE KEY(`r_reason_sk`)
 COMMENT "OLAP"
-DISTRIBUTED BY HASH(`r_reason_sk`) BUCKETS 2
+DISTRIBUTED BY HASH(`r_reason_sk`) BUCKETS 1
 PROPERTIES (
   "replication_num" = "1",
   "colocate_with" = "tpcdsg",
@@ -184,7 +184,7 @@ CREATE TABLE IF NOT EXISTS income_band
 ) ENGINE=OLAP
 DUPLICATE KEY(`ib_income_band_sk`)
 COMMENT "OLAP"
-DISTRIBUTED BY HASH(`ib_income_band_sk`) BUCKETS 2
+DISTRIBUTED BY HASH(`ib_income_band_sk`) BUCKETS 1
 PROPERTIES (
   "replication_num" = "1",
   "colocate_with" = "tpcdsh",
@@ -219,7 +219,7 @@ CREATE TABLE IF NOT EXISTS item
 ) ENGINE=OLAP
 DUPLICATE KEY(`i_item_sk`)
 COMMENT "OLAP"
-DISTRIBUTED BY HASH(`i_item_sk`) BUCKETS 2
+DISTRIBUTED BY HASH(`i_item_sk`) BUCKETS 1
 PROPERTIES (
   "replication_num" = "1",
   "colocate_with" = "tpcdsi",
@@ -261,7 +261,7 @@ CREATE TABLE IF NOT EXISTS store
 ) ENGINE=OLAP
 DUPLICATE KEY(`s_store_sk`)
 COMMENT "OLAP"
-DISTRIBUTED BY HASH(`s_store_sk`) BUCKETS 2
+DISTRIBUTED BY HASH(`s_store_sk`) BUCKETS 1
 PROPERTIES (
   "replication_num" = "1",
   "colocate_with" = "tpcdsj",
@@ -305,7 +305,7 @@ CREATE TABLE IF NOT EXISTS call_center
 ) ENGINE=OLAP
 DUPLICATE KEY(`cc_call_center_sk`)
 COMMENT "OLAP"
-DISTRIBUTED BY HASH(`cc_call_center_sk`) BUCKETS 2
+DISTRIBUTED BY HASH(`cc_call_center_sk`) BUCKETS 1
 PROPERTIES (
   "replication_num" = "1",
   "colocate_with" = "tpcdsk",
@@ -315,28 +315,28 @@ PROPERTIES (
 
 CREATE TABLE IF NOT EXISTS customer
 (
-    c_customer_sk            LARGEINT NULL COMMENT "",
-    c_customer_id            VARCHAR(16) NULL COMMENT "",
-    c_current_cdemo_sk       LARGEINT NULL COMMENT "",
-    c_current_hdemo_sk       SMALLINT NULL COMMENT "",
-    c_current_addr_sk        LARGEINT NULL COMMENT "",
-    c_first_shipto_date_sk   LARGEINT NULL COMMENT "",
-    c_first_sales_date_sk    LARGEINT NULL COMMENT "",
-    c_salutation             VARCHAR(4) NULL COMMENT "",
-    c_first_name             VARCHAR(11) NULL COMMENT "",
-    c_last_name              VARCHAR(13) NULL COMMENT "",
-    c_preferred_cust_flag    VARCHAR(1) NULL COMMENT "",
-    c_birth_day              TINYINT NULL COMMENT "",
-    c_birth_month            TINYINT NULL COMMENT "",
-    c_birth_year             SMALLINT NULL COMMENT "",
-    c_birth_country          VARCHAR(20) NULL COMMENT "",
-    c_login                  VARCHAR(50) NULL COMMENT "",
-    c_email_address          VARCHAR(48) NULL COMMENT "",
-    c_last_review_date       VARCHAR(7) NULL COMMENT ""
+    c_customer_sk            VARCHAR(256) NULL COMMENT "",
+    c_customer_id            VARCHAR(256) NULL COMMENT "",
+    c_current_cdemo_sk       VARCHAR(256) NULL COMMENT "",
+    c_current_hdemo_sk       VARCHAR(256) NULL COMMENT "",
+    c_current_addr_sk        VARCHAR(256) NULL COMMENT "",
+    c_first_shipto_date_sk   VARCHAR(256) NULL COMMENT "",
+    c_first_sales_date_sk    VARCHAR(256) NULL COMMENT "",
+    c_salutation             VARCHAR(256) NULL COMMENT "",
+    c_first_name             VARCHAR(256) NULL COMMENT "",
+    c_last_name              VARCHAR(256) NULL COMMENT "",
+    c_preferred_cust_flag    VARCHAR(256) NULL COMMENT "",
+    c_birth_day              VARCHAR(256) NULL COMMENT "",
+    c_birth_month            VARCHAR(256) NULL COMMENT "",
+    c_birth_year             VARCHAR(256) NULL COMMENT "",
+    c_birth_country          VARCHAR(256) NULL COMMENT "",
+    c_login                  VARCHAR(256) NULL COMMENT "",
+    c_email_address          VARCHAR(256) NULL COMMENT "",
+    c_last_review_date       VARCHAR(256) NULL COMMENT ""
 ) ENGINE=OLAP
 DUPLICATE KEY(`c_customer_sk`)
 COMMENT "OLAP"
-DISTRIBUTED BY HASH(`c_customer_sk`) BUCKETS 2
+DISTRIBUTED BY HASH(`c_customer_sk`) BUCKETS 1
 PROPERTIES (
   "replication_num" = "1",
   "colocate_with" = "tpcdsl",
@@ -375,7 +375,7 @@ CREATE TABLE IF NOT EXISTS web_site
 ) ENGINE=OLAP
 DUPLICATE KEY(`web_site_sk`)
 COMMENT "OLAP"
-DISTRIBUTED BY HASH(`web_site_sk`) BUCKETS 2
+DISTRIBUTED BY HASH(`web_site_sk`) BUCKETS 1
 PROPERTIES (
   "replication_num" = "1",
   "colocate_with" = "tpcdsm",
@@ -408,7 +408,7 @@ CREATE TABLE IF NOT EXISTS store_returns
 ) ENGINE=OLAP
 DUPLICATE KEY(`sr_returned_date_sk`)
 COMMENT "OLAP"
-DISTRIBUTED BY HASH(`sr_returned_date_sk`) BUCKETS 2
+DISTRIBUTED BY HASH(`sr_returned_date_sk`) BUCKETS 1
 PROPERTIES (
   "replication_num" = "1",
   "colocate_with" = "tpcdsn",
@@ -426,7 +426,7 @@ CREATE TABLE IF NOT EXISTS household_demographics
 ) ENGINE=OLAP
 DUPLICATE KEY(`hd_demo_sk`)
 COMMENT "OLAP"
-DISTRIBUTED BY HASH(`hd_demo_sk`) BUCKETS 2
+DISTRIBUTED BY HASH(`hd_demo_sk`) BUCKETS 1
 PROPERTIES (
   "replication_num" = "1",
   "colocate_with" = "tpcdso",
@@ -453,7 +453,7 @@ CREATE TABLE IF NOT EXISTS web_page
 ) ENGINE=OLAP
 DUPLICATE KEY(`wp_web_page_sk`)
 COMMENT "OLAP"
-DISTRIBUTED BY HASH(`wp_web_page_sk`) BUCKETS 2
+DISTRIBUTED BY HASH(`wp_web_page_sk`) BUCKETS 1
 PROPERTIES (
   "replication_num" = "1",
   "colocate_with" = "tpcdsp",
@@ -485,7 +485,7 @@ CREATE TABLE IF NOT EXISTS promotion
 ) ENGINE=OLAP
 DUPLICATE KEY(`p_promo_sk`)
 COMMENT "OLAP"
-DISTRIBUTED BY HASH(`p_promo_sk`) BUCKETS 2
+DISTRIBUTED BY HASH(`p_promo_sk`) BUCKETS 1
 PROPERTIES (
   "replication_num" = "1",
   "colocate_with" = "tpcdsq",
@@ -507,7 +507,7 @@ CREATE TABLE IF NOT EXISTS catalog_page
 ) ENGINE=OLAP
 DUPLICATE KEY(`cp_catalog_page_sk`)
 COMMENT "OLAP"
-DISTRIBUTED BY HASH(`cp_catalog_page_sk`) BUCKETS 2
+DISTRIBUTED BY HASH(`cp_catalog_page_sk`) BUCKETS 1
 PROPERTIES (
   "replication_num" = "1",
   "colocate_with" = "tpcdsr",
@@ -524,7 +524,7 @@ CREATE TABLE IF NOT EXISTS inventory
 ) ENGINE=OLAP
 DUPLICATE KEY(`inv_date_sk`)
 COMMENT "OLAP"
-DISTRIBUTED BY HASH(`inv_date_sk`) BUCKETS 2
+DISTRIBUTED BY HASH(`inv_date_sk`) BUCKETS 1
 PROPERTIES (
   "replication_num" = "1",
   "colocate_with" = "tpcdss",
@@ -564,7 +564,7 @@ CREATE TABLE IF NOT EXISTS catalog_returns
 ) ENGINE=OLAP
 DUPLICATE KEY(`cr_returned_date_sk`)
 COMMENT "OLAP"
-DISTRIBUTED BY HASH(`cr_returned_date_sk`) BUCKETS 2
+DISTRIBUTED BY HASH(`cr_returned_date_sk`) BUCKETS 1
 PROPERTIES (
   "replication_num" = "1",
   "colocate_with" = "tpcdst",
@@ -601,7 +601,7 @@ CREATE TABLE IF NOT EXISTS web_returns
 ) ENGINE=OLAP
 DUPLICATE KEY(`wr_returned_date_sk`)
 COMMENT "OLAP"
-DISTRIBUTED BY HASH(`wr_returned_date_sk`) BUCKETS 2
+DISTRIBUTED BY HASH(`wr_returned_date_sk`) BUCKETS 1
 PROPERTIES (
   "replication_num" = "1",
   "colocate_with" = "tpcdsu",
@@ -648,7 +648,7 @@ CREATE TABLE IF NOT EXISTS web_sales
 ) ENGINE=OLAP
 DUPLICATE KEY(`ws_sold_date_sk`)
 COMMENT "OLAP"
-DISTRIBUTED BY HASH(`ws_sold_date_sk`) BUCKETS 2
+DISTRIBUTED BY HASH(`ws_sold_date_sk`) BUCKETS 1
 PROPERTIES (
   "replication_num" = "1",
   "colocate_with" = "tpcdsv",
@@ -695,7 +695,7 @@ CREATE TABLE IF NOT EXISTS catalog_sales
 ) ENGINE=OLAP
 DUPLICATE KEY(`cs_sold_date_sk`)
 COMMENT "OLAP"
-DISTRIBUTED BY HASH(`cs_sold_date_sk`) BUCKETS 2
+DISTRIBUTED BY HASH(`cs_sold_date_sk`) BUCKETS 1
 PROPERTIES (
   "replication_num" = "1",
   "colocate_with" = "tpcdsw",
@@ -731,7 +731,7 @@ CREATE TABLE IF NOT EXISTS store_sales
 ) ENGINE=OLAP
 DUPLICATE KEY(`ss_sold_date_sk`)
 COMMENT "OLAP"
-DISTRIBUTED BY HASH(`ss_sold_date_sk`) BUCKETS 2
+DISTRIBUTED BY HASH(`ss_sold_date_sk`) BUCKETS 1
 PROPERTIES (
   "replication_num" = "1",
   "colocate_with" = "tpcdsx",

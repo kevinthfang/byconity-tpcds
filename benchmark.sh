@@ -28,74 +28,41 @@ TIME_FILE=$LOGDIR/time.txt
 
 echo "qid,duration,status" > "$RESULT"
 
-log "Make sure stats are created for tables, this will take some time..."
-clickhouse_client "create stats if not exists all" -d "$DATABASE"
-clickhouse_client "show stats all format PrettyCompact" -d "$DATABASE" >> $TRACE_LOG
-
 set -e
 
-log "Run warm up sql..."
-if [ -f ${SQL_DIR}/warmup.sql ]; then
-    QUERY=$(cat "${SQL_DIR}/warmup.sql")
-    log "$QUERY"
-	clickhouse_client "$QUERY" -d "$DATABASE" > /dev/null
-fi
+function measure_time() {
+	/usr/bin/time -p -o ${TIME_FILE} $@
+}
 
 function parse_time() {
 	sec_to_ms $(cat ${TIME_FILE} | grep real | awk '{print $2}'; rm ${TIME_FILE} > /dev/null)
 }
 
-function benchmark_query() {
-    for i in {1..18}; do
-        SQL=$(sed -e "/^--/d; s/${SUITE}\./${DATABASE}\./g" ${1})
-        if [ "${ENABLE_ENGINE_TIME}" == "true" ]; then 
-            DURATION=$(clickhouse_client "$SQL" -d $DATABASE -t --format=Null 2>&1) && RET=0 || RET=$?
-            DURATION=$(sec_to_ms ${DURATION})
-        else
-            CMD=$(clickhouse_client_cmd "$SQL" "-d $DATABASE -t --format=Null")
-            /usr/bin/time -p -o "${TIME_FILE}" timeout $TIMEOUT sh -c "$CMD" >${LOG_CUR} 2>&1 && RET=0 || RET=$?
-        fi 
+echo "warm up..."
+if [ -f SQL_DIR/Warmup.sql ]; then
+	cat SQL_DIR/Warmup.sql | $EXEC -D ${DATABASE} > /dev/null
+fi
 
-        # connection refused, try again
-        if [ $RET -ne 210 ]; then
-            break
-        fi
-        sleep 5
-    done
-    if [ $RET -eq 210 ]; then
-        echo "server down, abort testing"
-        exit 1
-    fi
+QPATH="${SQL_DIR}/doris"
 
-	[[ -f "${TIME_FILE}" ]] && DURATION=$(parse_time)
+# SKIPLIST=()
+for FILE in ${QPATH}/*.sql; do
+	QUERY=$(query_file_to_id $FILE)
 
-	# workaround for case that engine error happens but returns 0
-	if [ $RET -eq 0 ]; then
-		VAL=$(sed -n "s|^Code: \([0-9]\+\), e.displayText().*$|\1|p" $LOG_CUR)
-		if [ -n "$VAL" ]; then
-			RET=$VAL
+	for skip in "${SKIPLIST[@]}"; do
+		if [ "$QUERY" -eq "$skip" ]; then
+			echo "[+Q]$(echo $i) skipped"
+			continue 2
 		fi
-	fi
-	
-	STATUS=$RET
-}
+	done
 
+    # sed -re "s/${SUITE}\./${DATABASE}\./g" $FILE | $EXEC -D ${DATABASE}
 
-TIMEOUT_VAL=999999
+	sed -re "s/${SUITE}\./${DATABASE}\./g" $FILE | measure_time timeout $TIMEOUT $EXEC -D ${DATABASE} > ${LOG_CUR} 2>&1 && RET=0 || RET=$?
 
-QPATH="$SQL_DIR/standard"
+	DURATION=$(parse_time)
 
-TOTAL_DURATION=0
-
-log "Run benchmark sql from ${QPATH}"
-for FILE_PATH in ${QPATH}/*.sql; do
-	QID=$(query_file_to_id ${FILE_PATH})
-	benchmark_query ${FILE_PATH}
-    log "[Query$QID]duration: ${DURATION}ms, status: ${STATUS}"
-	echo "${QID},${DURATION},${STATUS}" >> $RESULT
-    TOTAL_DURATION=$(($TOTAL_DURATION + $DURATION))
+    log "[Query$QID]duration: ${DURATION}ms, status: ${RET}"
+	echo "${QID},${DURATION},${RET}" >> $RESULT
 done
-
-log "total duration: ${TOTAL_DURATION}ms"
-
 
