@@ -8,7 +8,7 @@ SELECT i_item_id,
                avg(cs_coupon_amt)    agg3,
                avg(cs_sales_price)   agg4,
                avg(cs_net_profit)    agg5,
-               avg(c_birth_year)     agg6,
+               avg(cast (c_birth_year as int))     agg6,
                avg(cd1.cd_dep_count) agg7
 FROM   catalog_sales,
        customer_demographics cd1,

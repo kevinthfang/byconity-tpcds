@@ -292,14 +292,14 @@ CREATE TABLE IF NOT EXISTS call_center
     cc_company               TINYINT NULL COMMENT "",
     cc_company_name          VARCHAR(5) NULL COMMENT "",
     cc_street_number         VARCHAR(3) NULL COMMENT "",
-    cc_street_name           VARCHAR(16) NULL COMMENT "",
+    cc_street_name           VARCHAR(25) NULL COMMENT "",
     cc_street_type           VARCHAR(9) NULL COMMENT "",
     cc_suite_number          VARCHAR(9) NULL COMMENT "",
-    cc_city                  VARCHAR(14) NULL COMMENT "",
-    cc_county                VARCHAR(22) NULL COMMENT "",
+    cc_city                  VARCHAR(25) NULL COMMENT "",
+    cc_county                VARCHAR(25) NULL COMMENT "",
     cc_state                 VARCHAR(2) NULL COMMENT "",
     cc_zip                   VARCHAR(5) NULL COMMENT "",
-    cc_country               VARCHAR(13) NULL COMMENT "",
+    cc_country               VARCHAR(25) NULL COMMENT "",
     cc_gmt_offset            FLOAT NULL COMMENT "",
     cc_tax_percentage        FLOAT NULL COMMENT ""
 ) ENGINE=OLAP
